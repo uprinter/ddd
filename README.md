@@ -3,7 +3,14 @@ Based on the book by Vladik Khononov "[Learning Domain-Driven Design: Aligning S
 
 ![Learning Domain-Driven Design: Aligning Software Architecture and Business Strategy](https://m.media-amazon.com/images/I/41KQXS5X-xL._SX379_BO1,204,203,200_.jpg)
 
-## Value object
+## Implementing Simple Business Logic
+### Transaction Script
+### Active Record
+
+## Tackling Complex Business Logic
+
+### Domain Model
+#### Value object
 - A value object is an object that can be identified by the composition of its values
 - Value objects are implemented as immutable objects
 - Since the equality of value objects is based on their values rather than on an id field or reference, it’s important to override and properly implement the equality checks
@@ -32,7 +39,7 @@ public class Color
 }
 ```
 
-## Entities
+#### Entities
 - An entity is the opposite of a value object
 - It requires an explicit identification field to distinguish between the different instances of the entity
 - Entities are not immutable and are expected to change
@@ -51,7 +58,7 @@ class Person
 }
 ```
 
-## Aggregates
+#### Aggregates
 - An aggregate is an entity: it requires an explicit identification field and its state is expected to change during an instance's lifecycle
 - The goal of the pattern is to protect the consistency of its data
 - The aggregate is a consistency enforcement boundary
@@ -66,3 +73,5 @@ public class Ticket
     private List<Message>   _messages;
 }
 ```
+
+### Event-Sourced Domain Model
