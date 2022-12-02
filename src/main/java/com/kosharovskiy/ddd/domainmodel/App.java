@@ -1,4 +1,4 @@
-package com.kosharovskiy;
+package com.kosharovskiy.ddd.domainmodel;
 
 import com.kosharovskiy.ddd.domainmodel.ticket.*;
 import com.kosharovskiy.ddd.domainmodel.ticket.valueobject.*;
