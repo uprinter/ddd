@@ -1,39 +1,18 @@
 package com.kosharovskiy.ddd.domainmodel;
 
-import com.kosharovskiy.ddd.domainmodel.ticket.*;
-import com.kosharovskiy.ddd.domainmodel.ticket.valueobject.*;
-
-import java.util.List;
-import java.util.Optional;
+import com.kosharovskiy.ddd.domainmodel.ticket.Message;
+import com.kosharovskiy.ddd.domainmodel.ticket.Ticket;
+import com.kosharovskiy.ddd.domainmodel.ticket.valueobject.Title;
 
 public class App {
     public static void main(String[] args) {
-        var ticket = new Ticket(new TicketId(1), new Title("New bug"));
-        ticket.getTitle();
+        TicketService ticketService = new TicketService(new TicketRepository() {
+        });
 
-        List<Message> messages = ticket.getMessages();
+        Ticket ticket = ticketService.createTicket(new Title("New ticket"));
+        Message message = ticket.addMessage("New message");
+        ticket.addAttachment(message.getMessageId(), "Attached file");
 
-
-        ticket.setTitle(new Title("New title"));
-
-        ticket.addMessage("New bug!");
-        ticket.addAttachment(new MessageId(1), "/att");
-        ticket.updateMessage(new MessageId(1), "no");
-
-        for (Message message : messages) {
-            System.out.println(message);
-        }
-
-        Optional<Message> message = ticket.getMessageById(new MessageId(1));
-
-        if (message.isPresent()) {
-            List<Attachment> attachments = message.get().getAttachments();
-            AttachmentId attachmentId = attachments.get(0).getAttachmentId();
-            FileName fileName = attachments.get(0).getFileName();
-        }
-
-        Title title = ticket.getTitle();
-
-        System.out.println(ticket);
+        ticket.updateMessage(message.getMessageId(), "Updated message");
     }
 }

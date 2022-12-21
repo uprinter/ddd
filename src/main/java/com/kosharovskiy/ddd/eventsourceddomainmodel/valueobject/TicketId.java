@@ -1,4 +1,4 @@
 package com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject;
 
-public record TicketId(Integer id) {
+public record TicketId(String ticketId) {
 }

@@ -6,10 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @ToString
@@ -24,7 +21,11 @@ public class Ticket {
 
     private final List<ProductId> productIds;
 
-    public Ticket(TicketId ticketId, Title title) {
+    public Ticket(Title title) {
+        this(new TicketId(UUID.randomUUID().toString()), title);
+    }
+
+    private Ticket(TicketId ticketId, Title title) {
         this.ticketId = ticketId;
         this.title = title;
         this.messages = new ArrayList<>();
@@ -39,9 +40,14 @@ public class Ticket {
         return Collections.unmodifiableList(this.productIds);
     }
 
-    public void addMessage(String body) {
+    public Message addMessage(String body) {
+        if (body == null) {
+            throw new IllegalArgumentException("Message can't be null");
+        }
+
         Message message = new Message(new MessageId(1), new Body(body));
         messages.add(message);
+        return message;
     }
 
     public void addProductId(ProductId productId) {

@@ -1,5 +1,6 @@
 package com.kosharovskiy.ddd.eventsourceddomainmodel;
 
+import com.kosharovskiy.ddd.eventsourceddomainmodel.event.Event;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.event.StatusChanged;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.event.TicketInitialized;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.Status;
@@ -9,7 +10,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @ToString
-public class TicketProjection {
+public class TicketLatestStateProjection {
     private TicketId ticketId;
 
     @Getter
@@ -21,15 +22,22 @@ public class TicketProjection {
     @Getter
     private long version;
 
+    private int timestamp;
+
     public void apply(TicketInitialized event) {
-        ticketId = event.ticketId();
-        status = event.status();
-        title = event.title();
-        version = 0;
+        status = event.getStatus();
+        title = event.getTitle();
+        baseApply(event);
     }
 
     public void apply(StatusChanged event) {
-        status = event.status();
-        version++;
+        status = event.getStatus();
+        baseApply(event);
+    }
+
+    private void baseApply(Event event) {
+        ticketId = event.getTicketId();
+        timestamp = event.getTimestamp();
+        version = event.getVersion();
     }
 }
