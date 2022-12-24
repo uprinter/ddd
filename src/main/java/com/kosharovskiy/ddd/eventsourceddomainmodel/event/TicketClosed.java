@@ -6,11 +6,10 @@ import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.Timestamp;
 import lombok.Getter;
 
 @Getter
-public class StatusChanged extends Event {
-    private final Status status;
+public class TicketClosed extends Event {
+    private final Status status = Status.CLOSED;
 
-    public StatusChanged(TicketId ticketId, Status status, Timestamp timestamp) {
-        super(ticketId, EventType.STATUS_CHANGED, timestamp);
-        this.status = status;
+    public TicketClosed(TicketId ticketId, Timestamp timestamp) {
+        super(ticketId, EventType.TICKET_CLOSED, timestamp);
     }
 }

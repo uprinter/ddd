@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 interface EventStore {
-    default void append(TicketId ticketId, List<Event> newEvents, int version) {
+    default void append(TicketId ticketId, List<Event> newEvents, int expectedVersion) {
 
     }
     default List<Event> fetch(TicketId ticketId) {

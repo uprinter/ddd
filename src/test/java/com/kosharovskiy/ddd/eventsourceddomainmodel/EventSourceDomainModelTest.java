@@ -1,20 +1,26 @@
 package com.kosharovskiy.ddd.eventsourceddomainmodel;
 
+import com.kosharovskiy.ddd.eventsourceddomainmodel.command.ChangeStatus;
+import com.kosharovskiy.ddd.eventsourceddomainmodel.command.CloseTicket;
+import com.kosharovskiy.ddd.eventsourceddomainmodel.command.CreateTicket;
+import com.kosharovskiy.ddd.eventsourceddomainmodel.event.Event;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.event.StatusChanged;
+import com.kosharovskiy.ddd.eventsourceddomainmodel.event.TicketClosed;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.event.TicketInitialized;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.Status;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.TicketId;
+import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.Timestamp;
 import com.kosharovskiy.ddd.eventsourceddomainmodel.valueobject.Title;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 public class EventSourceDomainModelTest {
@@ -22,24 +28,43 @@ public class EventSourceDomainModelTest {
     private EventStore eventStore;
 
     @Test
-    public void testLatestStateProjection() {
+    void testTicketEvents() {
         // given
-        var projection = new TicketLatestStateProjection();
-        given(eventStore.fetch(any(TicketId.class))).willReturn(List.of(
-                new TicketInitialized(new TicketId("1"), new Title("title")),
-                new StatusChanged(new TicketId("1"), Status.CLOSED)
-        ));
+        List<Event> events = List.of(
+                new TicketInitialized(new TicketId("1"), new Title("title"), Timestamp.of(ZonedDateTime.now().minusDays(6))),
+                new StatusChanged(new TicketId("1"), Status.TODO, Timestamp.of(ZonedDateTime.now().minusDays(5))),
+                new StatusChanged(new TicketId("1"), Status.DEVELOPMENT, Timestamp.of(ZonedDateTime.now().minusDays(4))),
+                new StatusChanged(new TicketId("1"), Status.TEST, Timestamp.of(ZonedDateTime.now().minusDays(3))),
+                new StatusChanged(new TicketId("1"), Status.DONE, Timestamp.of(ZonedDateTime.now().minusDays(2))),
+                new TicketClosed(new TicketId("1"), Timestamp.of(ZonedDateTime.now().minusDays(1)))
+        );
 
         // when
-        eventStore.fetch(new TicketId("1")).forEach(event -> {
-            switch (event.getEventType()) {
-                case TICKET_INITIALIZED -> projection.apply((TicketInitialized) event);
-                case STATUS_CHANGED -> projection.apply((StatusChanged) event);
-            }
-        });
+        Ticket ticket = new Ticket(events);
 
         // then
-        assertThat(projection.getStatus()).isEqualTo(Status.CLOSED);
-        assertThat(projection.getTitle()).isEqualTo(new Title("title"));
+        assertThat(ticket.getVersion()).isEqualTo(6);
+        assertThat(ticket.getStatus()).isEqualTo(Status.CLOSED);
+        assertThat(ticket.getTitle()).isEqualTo(new Title("title"));
     }
+
+    @Test
+    public void testTicketCommands() {
+        // given
+        var ticket = new Ticket(Collections.emptyList());
+
+        // when
+        ticket.executeCommand(new CreateTicket(new Title("title")));
+        ticket.executeCommand(new ChangeStatus(Status.TODO));
+        ticket.executeCommand(new ChangeStatus(Status.DEVELOPMENT));
+        ticket.executeCommand(new ChangeStatus(Status.TEST));
+        ticket.executeCommand(new ChangeStatus(Status.DONE));
+        ticket.executeCommand(new CloseTicket());
+
+        // then
+        assertThat(ticket.getVersion()).isEqualTo(6);
+        assertThat(ticket.getStatus()).isEqualTo(Status.CLOSED);
+        assertThat(ticket.getTitle()).isEqualTo(new Title("title"));
+    }
+
 }
